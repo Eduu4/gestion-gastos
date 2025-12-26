@@ -1,48 +1,42 @@
-// main.js
-import { observeAuth } from "./auth.js";
-import { addMovement, listenMovements } from "./movements.js";
+import { login } from "./auth.js";
+import { saveMovement } from "./movements.js";
 
-// Elementos del DOM
-const form = document.getElementById("movementForm");
-const list = document.getElementById("movementList");
+const movementForm = document.querySelector("#movement-form");
+const movementDescription = document.querySelector("#movement-description");
+const movementAmount = document.querySelector("#movement-amount");
+const movementType = document.querySelector("#movement-type");
 
-// Escuchar estado de autenticación
-observeAuth((user) => {
-  if (user) {
-    console.log("Usuario logueado:", user.uid);
-    listenMovements(renderMovements);
-  } else {
-    console.log("No autenticado");
-    list.innerHTML = "";
-  }
-});
+const movementsList = document.querySelector('#movements-list');
 
-// Enviar formulario
-form.addEventListener("submit", async (e) => {
-  e.preventDefault();
+let movements = [];
 
-  const data = {
-    type: document.getElementById("type").value,
-    amount: document.getElementById("amount").value,
-    category: document.getElementById("category").value,
-    description: document.getElementById("description").value
-  };
-
-  try {
-    await addMovement(data);
-    form.reset();
-  } catch (error) {
-    alert(error.message);
-  }
-});
-
-// Renderizar movimientos
-function renderMovements(movements) {
-  list.innerHTML = "";
-
-  movements.forEach((m) => {
-    const li = document.createElement("li");
-    li.textContent = `${m.type.toUpperCase()} - ${m.amount} - ${m.category}`;
-    list.appendChild(li);
-  });
+const renderMovements = () => {
+    movementsList.innerHTML = movements.map(movement => {
+        return `<li class="movement-item ${movement.type}">
+            <span>${movement.description}</span>
+            <span>${movement.amount}</span>
+        </li>`;
+    }).join('');
 }
+
+export const setMovements = (newMovements) => {
+    movements = newMovements;
+    renderMovements();
+}
+
+export const getMovements = () => {
+    return movements;
+}
+
+
+movementForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const movement = {
+        description: movementDescription.value,
+        amount: movementAmount.value,
+        type: movementType.value, // 'income' or 'expense'
+    }
+    saveMovement(movement);
+});
+
+login();

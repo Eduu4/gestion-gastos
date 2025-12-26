@@ -1,44 +1,28 @@
-import { db, auth } from "./firebase.js";
-import {
-  collection,
-  addDoc,
-  query,
-  where,
-  orderBy,
-  onSnapshot,
-  serverTimestamp
-} from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
+import { addDoc, collection, onSnapshot, orderBy, query, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-firestore.js";
+import { auth, db } from './firebase.js';
+import { getMovements, setMovements } from "./main.js";
 
-export async function addMovement(data) {
-  const user = auth.currentUser;
-  if (!user) throw new Error("No autenticado");
+const MOVEMENTS_COLLECTION = 'movements';
 
-  await addDoc(collection(db, "movements"), {
-    userId: user.uid,
-    type: data.type,
-    amount: Number(data.amount),
-    category: data.category,
-    description: data.description || "",
-    source: "web",
-    createdAt: serverTimestamp()
-  });
+export const saveMovement = (movement) => {
+    const { uid } = auth.currentUser;
+    addDoc(collection(db, MOVEMENTS_COLLECTION), {
+        ...movement,
+        timestamp: serverTimestamp(),
+        uid,
+    });
 }
 
-export function listenMovements(callback) {
-  const user = auth.currentUser;
-  if (!user) return;
+export const initMovements = () => {
+    const { uid } = auth.currentUser;
+    const q = query(collection(db, MOVEMENTS_COLLECTION), orderBy('timestamp', 'desc'));
 
-  const q = query(
-    collection(db, "movements"),
-    where("userId", "==", user.uid),
-    orderBy("createdAt", "desc")
-  );
-
-  return onSnapshot(q, (snapshot) => {
-    const movements = snapshot.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data()
-    }));
-    callback(movements);
-  });
+    onSnapshot(q, (querySnapshot) => {
+        const movements = [];
+        querySnapshot.forEach((doc) => {
+            const movement = doc.data();
+            movements.push(movement);
+        });
+        setMovements(movements);
+    });
 }
