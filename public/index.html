@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Gestión de Gastos</title>
+</head>
+<body>
+
+  <h1>Gestión de Gastos</h1>
+
+  <form id="movementForm">
+    <select id="type">
+      <option value="gasto">Gasto</option>
+      <option value="ingreso">Ingreso</option>
+    </select>
+  
+    <input id="amount" type="number" placeholder="Monto" required />
+  
+    <input id="category" placeholder="Categoría" required />
+  
+    <input id="description" placeholder="Descripción" />
+  
+    <button type="submit">Guardar</button>
+  </form>
+  
+  <ul id="movementList"></ul>  
+
+  <script type="module" src="./main.js"></script>
+</body>
+</html>
